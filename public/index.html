@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Einfacher Chat</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    #messages { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; }
+    select, input, button { margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Chat</h1>
+  <select id="username">
+    <option>User1</option>
+    <option>User2</option>
+    <option>User3</option>
+    <option>User4</option>
+  </select>
+  <div id="messages"></div>
+  <input id="input" autocomplete="off" placeholder="Nachricht eingeben" />
+  <button onclick="sendMessage()">Senden</button>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const messagesDiv = document.getElementById("messages");
+
+    socket.on("chat history", (history) => {
+      history.forEach(showMessage);
+    });
+
+    socket.on("chat message", (data) => {
+      showMessage(data);
+    });
+
+    function sendMessage() {
+      const input = document.getElementById("input");
+      const username = document.getElementById("username").value;
+      const text = input.value;
+      if (text.trim() === "") return;
+      socket.emit("chat message", { user: username, text });
+      input.value = "";
+    }
+
+    function showMessage(data) {
+      const div = document.createElement("div");
+      div.textContent = `${data.user}: ${data.text}`;
+      messagesDiv.appendChild(div);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+  </script>
+</body>
+</html>
